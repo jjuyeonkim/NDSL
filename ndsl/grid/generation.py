@@ -296,8 +296,7 @@ class MetricTerms:
         self._dy_agrid = None
         self._dx_center = None
         self._dy_center = None
-        self._area: Optional[Quantity] = None
-        self._area64: Optional[Quantity] = None
+        self._area = None
         self._area_c = None
         if eta_file is not None or ak is not None or bk is not None:
             (
@@ -479,8 +478,14 @@ class MetricTerms:
         )
 
         rad_conv = PI / 180.0
-        terms._grid_64.view[:, :, 0] = rad_conv * x
-        terms._grid_64.view[:, :, 1] = rad_conv * y
+        terms._grid_64.view[:, :, 0] = rad_conv * x.T
+        terms._grid_64.view[:, :, 1] = rad_conv * y.T
+
+        terms._comm.halo_update(terms._grid_64, n_points=terms._halo)
+
+        fill_corners_2d(
+            terms._grid_64.data, terms._grid_indexing, gridtype="B", direction="x"
+        )
 
         terms._init_agrid()
 
@@ -1491,17 +1496,8 @@ class MetricTerms:
         the area of each a-grid cell
         """
         if self._area is None:
-            self._area, self._area64 = self._compute_area()
+            self._area = self._compute_area()
         return self._area
-
-    @property
-    def area64(self) -> Quantity:
-        """
-        the area of each a-grid cell, at 64-bit precision
-        """
-        if self._area64 is None:
-            self._area, self._area64 = self._compute_area()
-        return self._area64
 
     @property
     def area_c(self) -> Quantity:
@@ -2099,7 +2095,7 @@ class MetricTerms:
 
         return dx_center, dy_center
 
-    def _compute_area_cube_sphere(self) -> tuple[Quantity, Quantity]:
+    def _compute_area_cube_sphere(self):
         area_64 = self.quantity_factory.zeros(
             [X_DIM, Y_DIM],
             "m^2",
@@ -2116,9 +2112,9 @@ class MetricTerms:
         )
         self._comm.halo_update(area_64, n_points=self._halo)
 
-        return quantity_cast_to_model_float(self.quantity_factory, area_64), area_64
+        return quantity_cast_to_model_float(self.quantity_factory, area_64)
 
-    def _compute_area_cartesian(self) -> tuple[Quantity, Quantity]:
+    def _compute_area_cartesian(self):
         area_64 = self.quantity_factory.zeros(
             [X_DIM, Y_DIM],
             "m^2",
@@ -2126,7 +2122,7 @@ class MetricTerms:
             allow_mismatch_float_precision=True,
         )
         area_64.data[:, :] = self._dx_const * self._dy_const
-        return quantity_cast_to_model_float(self.quantity_factory, area_64), area_64
+        return quantity_cast_to_model_float(self.quantity_factory, area_64)
 
     def _compute_area_c_cube_sphere(self):
         area_cgrid_64 = self.quantity_factory.zeros(
