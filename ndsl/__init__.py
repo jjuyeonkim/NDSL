@@ -4,7 +4,6 @@ from .comm.local_comm import LocalComm
 from .comm.mpi import MPIComm
 from .comm.null_comm import NullComm
 from .comm.partitioner import CubedSpherePartitioner, TilePartitioner
-from .config import Config
 from .constants import ConstantVersions
 from .dsl.caches.codepath import FV3CodePath
 from .dsl.dace.dace_config import DaceConfig, DaCeOrchestration, FrozenCompiledSDFG
@@ -75,7 +74,6 @@ __all__ = [
     "ndsl_log",
     "NetCDFMonitor",
     "Namelist",
-    "Config",
     "NullPerformanceCollector",
     "PerformanceCollector",
     "NullProfiler",
