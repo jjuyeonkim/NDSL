@@ -22,8 +22,8 @@ from ndsl.stencils.testing.grid import Grid  # type: ignore
 from ndsl.stencils.testing.parallel_translate import ParallelTranslate
 from ndsl.stencils.testing.savepoint import SavepointCase, Translate, dataset_to_dict
 from ndsl.stencils.testing.translate import TranslateGrid
-from ndsl.utils import grid_params_from_f90nml, load_f90nml
-
+from ndsl.utils import load_f90nml
+from ndsl.grid import GridConfig
 
 def pytest_addoption(parser: pytest.Parser) -> None:
     """Option for the Translate Test system
@@ -256,9 +256,9 @@ def sequential_savepoint_cases(
 ) -> list[SavepointCase]:
     savepoint_names = get_sequential_savepoint_names(metafunc, data_path)
     namelist = load_f90nml(namelist_filename)
-    grid_params = grid_params_from_f90nml(namelist)
+    grid_config = GridConfig.from_f90nml(namelist)
     stencil_config = get_config(backend, None)
-    ranks = get_ranks(metafunc, grid_params["layout"])
+    ranks = get_ranks(metafunc, grid_config.layout)
     savepoint_to_replay = get_savepoint_restriction(metafunc)
     grid_mode = metafunc.config.getoption("grid")
     topology_mode = metafunc.config.getoption("topology")
@@ -293,15 +293,15 @@ def _savepoint_cases(
     sort_report: str,
     no_report: bool,
 ) -> list[SavepointCase]:
-    grid_params = grid_params_from_f90nml(namelist)
+    grid_config = GridConfig.from_f90nml(namelist)
     return_list = []
     for rank in ranks:
         if grid_mode == "default":
             grid = Grid._make(
-                grid_params["npx"],
-                grid_params["npy"],
-                grid_params["npz"],
-                grid_params["layout"],
+                grid_config.npx,
+                grid_config.npy,
+                grid_config.npz,
+                grid_config.layout,
                 rank,
                 backend,
             )
@@ -312,12 +312,12 @@ def _savepoint_cases(
             grid = TranslateGrid(
                 dataset_to_dict(ds_grid.isel(rank=rank)),
                 rank=rank,
-                layout=grid_params["layout"],
+                layout=grid_config.layout,
                 backend=backend,
             ).python_grid()
             if grid_mode == "compute":
                 compute_grid_data(
-                    grid, grid_params, backend, grid_params["layout"], topology_mode
+                    grid, grid_config, backend, grid_config.layout, topology_mode
                 )
         else:
             raise NotImplementedError(f"Grid mode {grid_mode} is unknown.")
@@ -354,15 +354,15 @@ def _savepoint_cases(
 
 def compute_grid_data(
     grid: Grid,
-    grid_params: dict,
+    grid_config: GridConfig,
     backend: str,
     layout: tuple[int, int],
     topology_mode: str,
 ) -> None:
     grid.make_grid_data(
-        npx=grid_params["npx"],
-        npy=grid_params["npy"],
-        npz=grid_params["npz"],
+        npx=grid_config.npx,
+        npy=grid_config.npy,
+        npz=grid_config.npz,
         communicator=get_communicator(MPIComm(), layout, topology_mode),
         backend=backend,
     )
@@ -378,11 +378,11 @@ def parallel_savepoint_cases(
     comm: Comm,
 ) -> list[SavepointCase]:
     namelist = load_f90nml(namelist_filename)
-    grid_params = grid_params_from_f90nml(namelist)
+    grid_config = GridConfig.from_f90nml(namelist)
     topology_mode = metafunc.config.getoption("topology")
     sort_report = metafunc.config.getoption("sort_report")
     no_report = metafunc.config.getoption("no_report")
-    communicator = get_communicator(comm, grid_params["layout"], topology_mode)
+    communicator = get_communicator(comm, grid_config.layout, topology_mode)
     stencil_config = get_config(backend, communicator)
     savepoint_names = get_parallel_savepoint_names(metafunc, data_path)
     grid_mode = metafunc.config.getoption("grid")

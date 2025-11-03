@@ -1,3 +1,4 @@
+from .config import GridConfig
 from .eta import HybridPressureCoefficients
 from .generation import GridDefinitions, MetricTerms
 from .helper import (
@@ -13,6 +14,7 @@ from .helper import (
 
 __all__ = [
     "HybridPressureCoefficients",
+    "GridConfig",
     "GridDefinitions",
     "MetricTerms",
     "AngleGridData",
