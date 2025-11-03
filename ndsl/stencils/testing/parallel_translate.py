@@ -12,7 +12,7 @@ from ndsl.stencils.testing.translate import (
     TranslateFortranData2Py,
     read_serialized_data,
 )
-from ndsl.utils import grid_params_from_f90nml
+from ndsl.grid import GridConfig
 
 
 class ParallelTranslate:
@@ -130,8 +130,8 @@ class ParallelTranslate:
 
     @property
     def layout(self):
-        grid_params = grid_params_from_f90nml(self.namelist)
-        return grid_params["layout"]
+        grid_config = GridConfig.from_f90nml(self.namelist)
+        return grid_config.layout
 
     def compute_sequential(self, inputs_list, communicator_list):
         """Compute the outputs while iterating over a set of communicator
