@@ -184,7 +184,7 @@ def load_f90nml_as_dict(
 def f90nml_as_dict(
     nml: f90nml.Namelist,
     flatten: bool = True,
-    target_groups: list[str] | None = None,
+    target_groups: Sequence[str] | None = None,
 ) -> dict:
     """Uses a f90nml.Namelist and returns a dict representation.
     If target_groups are specified, then the dict is created using only those
