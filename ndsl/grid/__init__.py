@@ -9,7 +9,7 @@ from .helper import (
     HorizontalGridData,
     VerticalGridData,
 )
-
+from .grid_config import GridConfig
 
 __all__ = [
     "HybridPressureCoefficients",
@@ -20,6 +20,7 @@ __all__ = [
     "DampingCoefficients",
     "DriverGridData",
     "GridData",
+    "GridConfig",
     "HorizontalGridData",
     "VerticalGridData",
 ]

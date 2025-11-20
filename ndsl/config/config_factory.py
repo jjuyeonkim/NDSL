@@ -69,9 +69,7 @@ class ConfigFactory:
     def load_components(
         self,
         filepath: Path,
-        app_map: dict[
-            str, str
-        ],  # TODO : This might need some modifying. Maybe instead of a 1:1 mapping, we'll need one to many mapping?
+        config_types: list[str],  # JK NOTE: Trying it out -- list of config types like {"PhysicsConfig", "GridConfig", etc}
     ) -> dict[str, Config]:
         """
         Loads a configuration from a file.
@@ -90,20 +88,15 @@ class ConfigFactory:
 
         results: dict[str, Config] = {}
 
-        # TODO: What is the comp_name?
-        for comp_name, params in data.items():
-            # Identify the class name from the map
-            if not (
-                config_type_name := app_map.get(comp_name)
-            ):  # TODO: Not sure if this is going to be the same in our case. Maybe a 1:many map where multiple comp_names can be associated with a single config_type_name? Maybe we gather all of the related ones? I think the keys
-                raise ValueError(f"Component '{comp_name}' not found.")
-
+        for config_type_name, params in data.items():
             # Fetch the class from the registry
             if not (config_class := _CONFIG_REGISTRY.get(config_type_name)):
-                raise ValueError(f"Config class '{config_type_name}' not registered.")
+                # TODO: Do we really need to raise and error here? Can we not just ignore?
+                # raise ValueError(f"Config class '{config_type_name}' not registered.")
+                continue # Ignoring it...
 
             # Create instance using the safe from_dict builder
-            # TODO What's meant by "safe"
-            results[comp_name] = config_class.from_dict(params)
+            # TODO What's meant by "safe"?
+            results[config_type_name] = config_class.from_dict(params)
 
         return results
