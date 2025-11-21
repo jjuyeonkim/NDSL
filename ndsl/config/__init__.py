@@ -1,4 +1,4 @@
-from .config_factory import Config, ConfigParser, ConfigFactory, register_config
+from .config_factory import Config, ConfigFactory, ConfigParser, register_config
 from .config_parsers import NmlParser, YamlParser
 
 

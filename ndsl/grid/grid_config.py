@@ -6,10 +6,10 @@ import dataclasses
 from typing import Optional, Tuple
 
 import f90nml
-from ndsl.config import Config, register_config
 from dacite import Config as DaciteConfig
 from dacite import from_dict
 
+from ndsl.config import Config, register_config
 from ndsl.utils import f90nml_as_dict
 
 

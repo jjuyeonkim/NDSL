@@ -16,6 +16,8 @@ T = TypeVar("T", bound="Config")
 class Config:
     """
     Base dataclass for all configurations.
+
+
     Includes a helper to safely load from dicts, ignoring extra keys.
     """
 
@@ -69,7 +71,9 @@ class ConfigFactory:
     def load_components(
         self,
         filepath: Path,
-        config_types: list[str],  # JK NOTE: Trying it out -- list of config types like {"PhysicsConfig", "GridConfig", etc}
+        config_types: list[
+            str
+        ],  # JK NOTE: Trying it out -- list of config types like {"PhysicsConfig", "GridConfig", etc}
     ) -> dict[str, Config]:
         """
         Loads a configuration from a file.
@@ -93,7 +97,7 @@ class ConfigFactory:
             if not (config_class := _CONFIG_REGISTRY.get(config_type_name)):
                 # TODO: Do we really need to raise and error here? Can we not just ignore?
                 # raise ValueError(f"Config class '{config_type_name}' not registered.")
-                continue # Ignoring it...
+                continue  # Ignoring it...
 
             # Create instance using the safe from_dict builder
             # TODO What's meant by "safe"?
